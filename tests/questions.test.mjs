@@ -1,6 +1,7 @@
 // Milestone 4: Claude asks, the device answers. Real bridge and shims, MCP clients stand in for Claude Code.
 // Run: node --test tests/questions.test.mjs
 import { test, before, after } from 'node:test'
+import { waitUp } from './wait-up.mjs'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { mkdtempSync, readFileSync, mkdirSync } from 'node:fs'
@@ -32,7 +33,7 @@ function setup(extraEnv = {}) {
   const h = { RUN, PORT, env, bridge: null, token: null, clients: [] }
   h.start = async () => {
     h.bridge = spawn('node', [join(ROOT, 'bridge', 'bridge.mjs')], { env, stdio: ['ignore', 'ignore', 'pipe'] })
-    await sleep(400)
+    await waitUp(PORT)
     h.token = readFileSync(join(RUN, 'device-token'), 'utf8').trim()
   }
   h.api = async (method, path, body, headers = {}) => {

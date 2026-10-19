@@ -1,6 +1,7 @@
 // Voice upload and transcription, with a fake whisper-server.
 // Run: node --test tests/voice.test.mjs
 import { test, before, after } from 'node:test'
+import { waitUp } from './wait-up.mjs'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { mkdtempSync, readFileSync, readdirSync, mkdirSync } from 'node:fs'
@@ -86,7 +87,7 @@ const upload = (sid, body, request_id) => api('POST', '/voice/jobs', body, { 'X-
 
 before(async () => {
   bridge = spawn('node', [join(ROOT, 'bridge', 'bridge.mjs')], { env, stdio: ['ignore', 'ignore', 'pipe'] })
-  await sleep(400)
+  await waitUp(PORT)
   token = readFileSync(join(RUN, 'device-token'), 'utf8').trim()
   A = await session('alpha'); B = await session('beta')
   sidA = await sidFor('alpha'); sidB = await sidFor('beta')

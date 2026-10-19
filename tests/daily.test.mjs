@@ -1,6 +1,7 @@
 // Milestone 5: status, token revocation, clean-up and vocabulary hints.
 // Run: node --test tests/daily.test.mjs
 import { test, before, after } from 'node:test'
+import { waitUp } from './wait-up.mjs'
 import assert from 'node:assert/strict'
 import { spawn, execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, writeFileSync, cpSync, mkdirSync } from 'node:fs'
@@ -49,7 +50,7 @@ function wav(seconds) {
 
 before(async () => {
   bridge = spawn('node', [join(ROOT, 'bridge', 'bridge.mjs')], { env, stdio: ['ignore', 'ignore', 'pipe'] })
-  await sleep(400)
+  await waitUp(PORT)
 })
 after(() => { bridge?.kill(); fake.close() })
 
@@ -108,7 +109,7 @@ test('clean-up deletes old rows but keeps the newest event', async () => {
   const top = db.prepare(`SELECT MAX(event_id) id FROM events`).get().id
   db.close()
   bridge = spawn('node', [join(ROOT, 'bridge', 'bridge.mjs')], { env, stdio: ['ignore', 'ignore', 'pipe'] })
-  await sleep(400)
+  await waitUp(PORT)
   const after = new DatabaseSync(join(RUN, 'bridge.db'))
   const ids = after.prepare(`SELECT message_id FROM messages`).all().map(r => r.message_id)
   const events = after.prepare(`SELECT event_id FROM events`).all().map(r => r.event_id)

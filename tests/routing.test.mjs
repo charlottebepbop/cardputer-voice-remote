@@ -1,6 +1,7 @@
 // Runs the real bridge and two real shims. An MCP client stands in for each Claude Code session.
 // Run: node --test tests/routing.test.mjs
 import { test, before, after } from 'node:test'
+import { waitUp } from './wait-up.mjs'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { mkdtempSync, readFileSync, mkdirSync } from 'node:fs'
@@ -21,7 +22,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 let bridge, token
 function startBridge() {
   bridge = spawn('node', [join(ROOT, 'bridge', 'bridge.mjs')], { env, stdio: ['ignore', 'ignore', 'pipe'] })
-  return sleep(400)
+  return waitUp(PORT)
 }
 
 async function api(method, path, body, auth = true) {

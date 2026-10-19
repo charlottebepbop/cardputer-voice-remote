@@ -1,6 +1,7 @@
 // The LAN listener runs only on trusted networks and follows network changes without a restart.
 // Run: node --test tests/network.test.mjs
 import { test, after } from 'node:test'
+import { waitUp } from './wait-up.mjs'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { mkdtempSync, writeFileSync, chmodSync } from 'node:fs'
@@ -43,6 +44,7 @@ const status = async () => {
 }
 
 test('untrusted network: no listener', async () => {
+  await waitUp(PORT)
   await sleep(800)
   assert.equal(await listening(), false)
   assert.equal(await status(), 'untrusted')
