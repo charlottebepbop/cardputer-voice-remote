@@ -1,0 +1,4 @@
+#!/bin/sh
+# Bridge with the HTTPS listener on the Wi-Fi address. It listens only on networks
+# added with bin/provision.py, and follows the laptop when it changes network.
+cd "$(dirname "$0")/.." && VOICE_REMOTE_LAN=1 exec node bridge/bridge.mjs

@@ -1,0 +1,8 @@
+#!/bin/sh
+# Replaces the device token. The running bridge rejects the old one at once.
+# Then plug in the Cardputer and send it the new token.
+root=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
+umask 077
+openssl rand -hex 24 > "$root/run/device-token.new" && mv "$root/run/device-token.new" "$root/run/device-token"
+echo "Old token revoked. Next: plug in the Cardputer, then run"
+echo "  cd $root && uv run --with pyserial python -I bin/provision.py --token-only"

@@ -1,0 +1,9 @@
+node_modules/
+run/
+models/
+firmware/.pio/
+.env
+*.bin
+*.elf
+*.pem
+*.key

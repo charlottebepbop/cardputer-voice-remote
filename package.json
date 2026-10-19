@@ -1,0 +1,12 @@
+{
+  "name": "cardputer-voice-remote",
+  "version": "0.1.0",
+  "description": "Talk to Claude Code sessions from an M5 Cardputer. Bridge, channel shim and firmware.",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "postinstall": "npm --prefix claude-integration ci",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

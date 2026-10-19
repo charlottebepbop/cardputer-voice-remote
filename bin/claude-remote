@@ -1,0 +1,16 @@
+#!/bin/sh
+# Start Claude Code in the current folder with the voice-remote channel loaded.
+# Only sessions started this way can receive messages from the remote.
+# readlink -f: the command may be a symlink, the shim sits next to the real file.
+here=$(dirname "$(readlink -f "$0")")
+# Built per run so no absolute path is stored in the repo.
+mcp=$(node -e 'console.log(JSON.stringify({mcpServers:{"voice-remote":{command:"node",args:[process.argv[1]]}}}))' "$here/../claude-integration/shim.mjs")
+# Claude Code lists MCP tools only from the second turn on. Without this first turn,
+# a voice message that starts the session never sees remote_reply.
+# The prompt goes first: both flags take lists and would swallow it.
+# Resumed sessions start a new process, so they need the warm-up too. A first arg that is a flag means no prompt was given.
+warm="Voice remote session started. Reply with one word: ready."
+case "$1" in
+  ""|-*) set -- "$warm" "$@" ;;
+esac
+exec claude "$@" --mcp-config "$mcp" --dangerously-load-development-channels server:voice-remote

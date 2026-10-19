@@ -1,0 +1,7 @@
+#!/bin/sh
+# Prints the MAC of the default gateway on Wi-Fi. It names the network: macOS hides the Wi-Fi name from scripts.
+if="${VOICE_REMOTE_LAN_IF:-en0}"
+gw=$(route -n get -ifscope "$if" default 2>/dev/null | awk '/gateway:/{print $2}')
+[ -n "$gw" ] || exit 1
+# arp drops leading zeros (8 for 08). Pad them so the ID matches other tools.
+arp -n "$gw" 2>/dev/null | awk '{print $4}' | grep -E '^[0-9a-f]{1,2}(:[0-9a-f]{1,2}){5}$' | awk -F: '{for (i = 1; i <= NF; i++) printf "%s%02s", (i > 1 ? ":" : ""), $i; print ""}' | tr ' ' 0
