@@ -497,11 +497,12 @@ function tlsMaterial() {
   host ||= hostname().split('.')[0]
   const ips = (networkInterfaces()[LAN_IF] ?? []).filter(a => a.family === 'IPv4').map(a => a.address)
   if (!ips.length) throw new Error(`no IPv4 address on ${LAN_IF}, is Wi-Fi on?`)
+  // X.509 limits CN to 64 characters. CI runner hostnames are longer, so the CN is cut. The SAN keeps the full name.
   // mbedTLS on the ESP32 matches the host string against DNS names, so IPs go in as both kinds.
   const san = [`DNS:${host}.local`, 'DNS:localhost', ...ips.flatMap(ip => [`DNS:${ip}`, `IP:${ip}`])].join(',')
   writeFileSync(f('leaf.ext'), `subjectAltName=${san}\nextendedKeyUsage=serverAuth\n`)
   ssl('ecparam', '-name', 'prime256v1', '-genkey', '-noout', '-out', f('leaf.key'))
-  ssl('req', '-new', '-key', f('leaf.key'), '-subj', `/CN=${host}.local`, '-out', f('leaf.csr'))
+  ssl('req', '-new', '-key', f('leaf.key'), '-subj', `/CN=${`${host}.local`.slice(0, 64)}`, '-out', f('leaf.csr'))
   ssl('x509', '-req', '-in', f('leaf.csr'), '-CA', f('ca.pem'), '-CAkey', f('ca.key'), '-CAcreateserial', '-days', '30', '-sha256', '-extfile', f('leaf.ext'), '-out', f('leaf.pem'))
   chmodSync(f('ca.key'), 0o600); chmodSync(f('leaf.key'), 0o600)
   return { key: readFileSync(f('leaf.key')), cert: readFileSync(f('leaf.pem')), host, ip: ips[0] }
