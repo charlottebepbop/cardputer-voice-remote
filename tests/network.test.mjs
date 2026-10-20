@@ -43,6 +43,15 @@ const status = async () => {
   return (await (await fetch(`http://127.0.0.1:${PORT}/status`, { headers: { Authorization: `Bearer ${token}` } })).json()).network
 }
 
+// Polls until fn() returns want. Cert issuing and the network check take longer on slow runners.
+async function until(fn, want, ms = 15000) {
+  const end = Date.now() + ms
+  while (Date.now() < end) {
+    if (await fn() === want) return
+    await sleep(100)
+  }
+}
+
 test('untrusted network: no listener', async () => {
   await waitUp(PORT)
   await sleep(800)
@@ -52,11 +61,11 @@ test('untrusted network: no listener', async () => {
 
 test('trusting the network starts the listener, moving away stops it', async () => {
   writeFileSync(join(RUN, 'trusted-networks'), 'aa:bb:cc:dd:ee:01 Home\n')
-  await sleep(1500) // includes issuing the cert
+  await until(listening, true) // includes issuing the cert
   assert.equal(await listening(), true)
   assert.equal(await status(), 'Home')
   writeFileSync(idFile, 'aa:bb:cc:dd:ee:99\n')
-  await sleep(600)
+  await until(listening, false)
   assert.equal(await listening(), false)
   assert.equal(await status(), 'untrusted')
 })
