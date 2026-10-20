@@ -1,5 +1,7 @@
 # Cardputer voice remote for Claude Code
 
+[![test](https://github.com/charlottebepbop/cardputer-voice-remote/actions/workflows/test.yml/badge.svg)](https://github.com/charlottebepbop/cardputer-voice-remote/actions/workflows/test.yml)
+
 Talk to your Claude Code sessions from an M5 Cardputer. Hold Space, speak, read or hear the answer.
 
 Unofficial project. Not affiliated with Anthropic.
