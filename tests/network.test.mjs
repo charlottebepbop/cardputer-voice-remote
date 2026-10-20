@@ -31,6 +31,8 @@ const bridge = spawn('node', [join(ROOT, 'bridge', 'bridge.mjs')], {
   },
   stdio: ['ignore', 'ignore', 'pipe'],
 })
+let log = ''
+bridge.stderr.on('data', d => { log += d })
 after(() => bridge.kill())
 
 const listening = () => new Promise(r => {
@@ -62,7 +64,7 @@ test('untrusted network: no listener', async () => {
 test('trusting the network starts the listener, moving away stops it', async () => {
   writeFileSync(join(RUN, 'trusted-networks'), 'aa:bb:cc:dd:ee:01 Home\n')
   await until(listening, true) // includes issuing the cert
-  assert.equal(await listening(), true)
+  assert.equal(await listening(), true, `bridge stderr:\n${log}`)
   assert.equal(await status(), 'Home')
   writeFileSync(idFile, 'aa:bb:cc:dd:ee:99\n')
   await until(listening, false)
