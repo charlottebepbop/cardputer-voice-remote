@@ -6,7 +6,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdirSync, existsSync, readFileSync, writeFileSync, unlinkSync, chmodSync, readdirSync, statSync, appendFileSync } from 'node:fs'
 import { spawn, execFileSync } from 'node:child_process'
-import { networkInterfaces } from 'node:os'
+import { hostname, networkInterfaces } from 'node:os'
 import https from 'node:https'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -491,7 +491,10 @@ function tlsMaterial() {
     ssl('ecparam', '-name', 'prime256v1', '-genkey', '-noout', '-out', f('ca.key'))
     ssl('req', '-x509', '-new', '-key', f('ca.key'), '-sha256', '-days', '3650', '-subj', '/CN=voice-remote local CA', '-out', f('ca.pem'))
   }
-  const host = execFileSync('scutil', ['--get', 'LocalHostName']).toString().trim()
+  // scutil exits non-zero when no local hostname is set, as on a fresh CI runner.
+  let host
+  try { host = execFileSync('scutil', ['--get', 'LocalHostName'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() } catch {}
+  host ||= hostname().split('.')[0]
   const ips = (networkInterfaces()[LAN_IF] ?? []).filter(a => a.family === 'IPv4').map(a => a.address)
   if (!ips.length) throw new Error(`no IPv4 address on ${LAN_IF}, is Wi-Fi on?`)
   // mbedTLS on the ESP32 matches the host string against DNS names, so IPs go in as both kinds.
